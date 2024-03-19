@@ -1,0 +1,66 @@
+server:
+  port: 8060
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8061/eureka/
+  instance:
+   preferIpAddress: true
+
+logging:
+  pattern: 
+    console: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} %m%n"
+              
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+      - id: helloworld-service
+        uri: lb://helloworld-service
+        predicates:
+        - Path=/helloworld/**
+        filters:
+        - RewritePath=/helloworld/(?<path>.*), /$\{path}
+      
+      - id: login-service
+        uri: lb://login-service
+        predicates:
+        - Path=/api/auth/**
+        
+      - id: helloworld2-service
+        uri: lb://helloworld2-service
+        predicates:
+        - Path=/helloworld2/**
+        filters:
+        - RewritePath=/helloworld2/(?<path>.*), /$\{path}
+        
+      - id: ecomm-service
+        uri: lb://ecomm-service
+        predicates:
+        - Path=/ecomm/**
+        filters:
+        - RewritePath=/ecomm/(?<path>.*), /$\{path}
+        
+      - id: openapi
+        uri: http://localhost:${server.port}
+        predicates:
+           - Path=/v3/api-docs/**
+        filters:
+           - RewritePath=/v3/api-docs/(?<path>.*), /$\{path}/v3/api-docs
+springdoc:
+  swagger-ui:
+    urls:
+      - name: helloworld
+        url: /v3/api-docs/helloworld
+      - name : ecomm-service
+        url: /v3/api-docs/api/ecomm-service
+      - name : login-service
+        url : /v3/api-docs/api/auth
+        
+  cache:
+    disabled: true
+      
